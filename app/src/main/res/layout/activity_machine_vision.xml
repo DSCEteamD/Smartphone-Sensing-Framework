@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.example.ssf.mma.machinevision.MachineVision"
+    tools:context="edu.example.ssf.bananaco.machinevision.MachineVision"
     xmlns:opencv="http://schemas.android.com/apk/res-auto"
     >
 

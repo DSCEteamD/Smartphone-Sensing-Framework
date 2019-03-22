@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with MMA.  If not, see <http://www.gnu.org/licenses/>.
  */
-package edu.example.ssf.mma.data;
+package edu.example.ssf.bananaco.data;
 
 import java.text.SimpleDateFormat;
 

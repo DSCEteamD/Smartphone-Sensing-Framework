@@ -16,7 +16,7 @@
     along with MMA.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.example.ssf.mma.userInterface;
+package edu.example.ssf.bananaco.userInterface;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import edu.example.ssf.mma.R;
-import edu.example.ssf.mma.config.ConfigApp;
+import edu.example.ssf.bananaco.R;
+import edu.example.ssf.bananaco.config.ConfigApp;
 
 /**
  * List File Activity that shall give internal access to the saved files,

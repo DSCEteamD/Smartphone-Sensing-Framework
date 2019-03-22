@@ -1,4 +1,4 @@
-package edu.example.ssf.mma.imagedetection;
+package edu.example.ssf.bananaco.imagedetection;
 
 import android.Manifest;
 import android.app.Activity;
@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import edu.example.ssf.mma.R;
+import edu.example.ssf.bananaco.R;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class ImageDetection extends Activity implements View.OnClickListener {

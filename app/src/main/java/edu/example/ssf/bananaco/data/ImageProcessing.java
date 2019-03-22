@@ -1,4 +1,4 @@
-package edu.example.ssf.mma.data;
+package edu.example.ssf.bananaco.data;
 
 /**
  * Image Processing Class for opencv functions

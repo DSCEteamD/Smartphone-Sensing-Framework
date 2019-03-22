@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="edu.example.ssf.mma">
+    package="edu.example.ssf.bananaco">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -39,8 +39,6 @@
         </activity>
         <activity android:name=".userInterface.ListFileActivity"></activity>
         <activity android:name=".charts.AccChart"></activity>
-        <activity android:name=".hardwareAdapter.GPS.gps"></activity>
-        <activity android:name=".machinevision.MachineVision"></activity>
         <activity android:name=".imagedetection.ImageDetection"></activity>
     </application>
 

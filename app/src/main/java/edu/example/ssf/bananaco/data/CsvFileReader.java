@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with MMA.  If not, see <http://www.gnu.org/licenses/>.
  */
-package edu.example.ssf.mma.data;
+package edu.example.ssf.bananaco.data;
 
 import android.os.Environment;
 import android.util.Log;
@@ -27,7 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import edu.example.ssf.mma.config.ConfigApp;
+import edu.example.ssf.bananaco.config.ConfigApp;
 
 
 /**

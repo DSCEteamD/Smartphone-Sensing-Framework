@@ -16,14 +16,14 @@
     along with MMA.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.example.ssf.mma.userInterface;
+package edu.example.ssf.bananaco.userInterface;
 
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import edu.example.ssf.mma.imagedetection.ImageDetection;
+import edu.example.ssf.bananaco.imagedetection.ImageDetection;
 
 public class MainActivity extends AppCompatActivity {
 

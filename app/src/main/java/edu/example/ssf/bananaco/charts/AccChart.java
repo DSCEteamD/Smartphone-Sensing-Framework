@@ -16,7 +16,7 @@
     along with MMA.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.example.ssf.mma.charts;
+package edu.example.ssf.bananaco.charts;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -26,8 +26,8 @@ import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import edu.example.ssf.mma.R;
-import edu.example.ssf.mma.data.CurrentTickData;
+import edu.example.ssf.bananaco.R;
+import edu.example.ssf.bananaco.data.CurrentTickData;
 
 
 /**

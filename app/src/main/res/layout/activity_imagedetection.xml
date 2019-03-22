@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.example.ssf.mma.imagedetection.ImageDetection">
+    tools:context="edu.example.ssf.bananaco.imagedetection.ImageDetection">
 
-    <edu.example.ssf.mma.imagedetection.AutoFitTextureView
+    <edu.example.ssf.bananaco.imagedetection.AutoFitTextureView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/texture"/>

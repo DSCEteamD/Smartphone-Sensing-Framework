@@ -16,7 +16,7 @@
     along with MMA.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package edu.example.ssf.mma.config;
+package edu.example.ssf.bananaco.config;
 
 
 /**

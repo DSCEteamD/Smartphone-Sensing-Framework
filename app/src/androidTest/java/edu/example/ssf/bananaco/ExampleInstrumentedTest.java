@@ -1,4 +1,4 @@
-package edu.example.ssf.mma;
+package edu.example.ssf.bananaco;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

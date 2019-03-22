@@ -1,4 +1,4 @@
-package edu.example.ssf.mma;
+package edu.example.ssf.bananaco;
 
 import org.junit.Test;
 
