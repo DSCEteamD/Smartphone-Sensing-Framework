@@ -20,7 +20,9 @@ package edu.example.ssf.bananaco.userInterface;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import edu.example.ssf.bananaco.imagedetection.ImageDetection;
@@ -39,6 +41,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         ActivityCompat.requestPermissions(
                 MainActivity.this,
                 new  String[]{
@@ -46,9 +53,15 @@ public class MainActivity extends AppCompatActivity {
                 },
                 PERMISSIONS_MULTIPLE_REQUEST
         );
-
-        startActivity(new Intent(this, ImageDetection.class));
     }
 
-
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent(this, ImageDetection.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+            this.startActivity(intent);
+            this.finish();
+        }
+    }
 }
