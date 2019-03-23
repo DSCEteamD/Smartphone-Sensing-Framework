@@ -430,7 +430,7 @@ public class ImageDetection extends Activity {
         protected void onPostExecute(String string) {
             super.onPostExecute(string);
             nextUpdate.set(System.currentTimeMillis() + 500);
-            textView.setText(String.format("%d: %s, next %d", System.currentTimeMillis(), string, nextUpdate.get()));
+            textView.setText(String.format("%d -> %d: \n%s", System.currentTimeMillis(), nextUpdate.get(), string));
         }
     }
 
