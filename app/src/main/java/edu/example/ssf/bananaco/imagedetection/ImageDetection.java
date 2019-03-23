@@ -145,12 +145,11 @@ public class ImageDetection extends Activity {
         }
     };
 
-    private static Size chooseOptimalSize(Size[] choices
-            , int width, int height, Size aspectRatio) {
+    private static Size chooseOptimalSize(Size[] choices, int width, int height, Size aspectRatio) {
 
         List<Size> bigEnough = new ArrayList<>();
-        int w = aspectRatio.getWidth();
-        int h = aspectRatio.getHeight();
+        int w = aspectRatio.getWidth() / 10;
+        int h = aspectRatio.getHeight() / 10;
         for (Size option : choices) {
             if (option.getHeight() == option.getWidth() * h / w &&
                     option.getWidth() >= width && option.getHeight() >= height) {
@@ -193,53 +192,6 @@ public class ImageDetection extends Activity {
 
     }
 
-    private void captureStillPicture() {
-        try {
-            if (cameraDevice == null) {
-                return;
-            }
-
-            final CaptureRequest.Builder captureRequestBuilder =
-                    cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-
-            captureRequestBuilder.addTarget(imageReader.getSurface());
-
-            captureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-
-            captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                    CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-
-            int rotation = getWindowManager().getDefaultDisplay().getRotation();
-
-            captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION
-                    , ORIENTATIONS.get(rotation));
-
-            captureSession.stopRepeating();
-
-            captureSession.capture(captureRequestBuilder.build()
-                    , new CameraCaptureSession.CaptureCallback() {
-
-                        @Override
-                        public void onCaptureCompleted(CameraCaptureSession session
-                                , CaptureRequest request, TotalCaptureResult result) {
-                            try {
-                                // previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-                                previewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
-                                previewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-
-                                captureSession.setRepeatingRequest(previewRequest, null,
-                                        null);
-                            } catch (CameraAccessException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }, null);
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void openCamera(int width, int height) {
         setUpCameraOutputs(width, height);
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
@@ -260,9 +212,7 @@ public class ImageDetection extends Activity {
             texture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
             Surface surface = new Surface(texture);
 
-            previewRequestBuilder = cameraDevice
-                    .createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-
+            previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             previewRequestBuilder.addTarget(surface);
             previewRequestBuilder.addTarget(previewReader.getSurface());
 
@@ -285,6 +235,7 @@ public class ImageDetection extends Activity {
                             captureSession = cameraCaptureSession;
                             try {
 
+                                previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
                                 previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
 
@@ -327,6 +278,12 @@ public class ImageDetection extends Activity {
                     new CompareSizesByArea()
             );
 
+            // TODO otherwise it will not work on newish devices, upper limit not known yet
+            largest = new Size(
+                    Math.min(largest.getWidth(), 1080),
+                    Math.min(largest.getHeight(), 1920)
+            );
+
             previewReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.YUV_420_888, 5);
             previewReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -343,8 +300,7 @@ public class ImageDetection extends Activity {
                 }
             }, null);
 
-            imageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
-                    ImageFormat.JPEG, 2);
+            imageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.JPEG, 2);
             imageReader.setOnImageAvailableListener(
                     new ImageReader.OnImageAvailableListener() {
 
