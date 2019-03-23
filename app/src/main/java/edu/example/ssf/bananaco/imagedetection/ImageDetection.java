@@ -58,14 +58,14 @@ public class ImageDetection extends Activity {
     private static final int INPUT_SIZE = 224;
     private static final int IMAGE_MEAN = 117;
     private static final float IMAGE_STD = 1;
-    /*private static final String INPUT_NAME = "Placeholder";
+    private static final String INPUT_NAME = "Placeholder";
     private static final String OUTPUT_NAME = "final_result";
     private static final String MODEL_FILE = "file:///android_asset/retrained_graph.pb";
-    private static final String LABEL_FILE = "file:///android_asset/retrained_labels.txt";*/
-    private static final String INPUT_NAME = "input";
+    private static final String LABEL_FILE = "file:///android_asset/retrained_labels.txt";
+    /*private static final String INPUT_NAME = "input";
     private static final String OUTPUT_NAME = "output";
     private static final String MODEL_FILE = "file:///android_asset/tensorflow_inception_graph.pb";
-    private static final String LABEL_FILE = "file:///android_asset/imagenet_comp_graph_label_strings.txt";
+    private static final String LABEL_FILE = "file:///android_asset/imagenet_comp_graph_label_strings.txt";*/
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     private static final String TAG = "ImageDetection";
 
