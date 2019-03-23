@@ -1,3 +1,0 @@
-- State Machine
-- GUI Mockup
-- Data Analysis / Background
