@@ -10,3 +10,4 @@
 .externalNativeBuild
 .idea
 
+app/src/main/assets/retrained_graph.pb
