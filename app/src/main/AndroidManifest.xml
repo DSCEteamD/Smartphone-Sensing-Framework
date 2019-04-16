@@ -37,8 +37,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".userInterface.ListFileActivity"></activity>
-        <activity android:name=".charts.AccChart"></activity>
         <activity android:name=".imagedetection.ImageDetection"></activity>
     </application>
 
