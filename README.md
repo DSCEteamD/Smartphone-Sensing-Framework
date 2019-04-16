@@ -19,3 +19,6 @@ The aim of this framework is to provide a quick way to develop context aware app
 
 
 ### This is the Dev-Branch for the Smartphone Sensing Framework 2.2
+
+## Train Data
+See [peltzefa training](https://github.com/peltzefa/nn_training_docker)

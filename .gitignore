@@ -9,4 +9,5 @@
 /captures
 .externalNativeBuild
 .idea
-*.pb
+
+app/src/main/assets/retrained_graph.pb
