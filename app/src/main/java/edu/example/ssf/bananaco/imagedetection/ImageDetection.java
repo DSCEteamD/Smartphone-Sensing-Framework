@@ -24,6 +24,7 @@ import android.media.ImageReader;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -95,12 +96,12 @@ public class ImageDetection extends Activity {
 
     private CameraCaptureSession captureSession;
     private ImageReader previewReader;
+
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
 
         @Override
         public void onOpened(CameraDevice cameraDevice) {
             ImageDetection.this.cameraDevice = cameraDevice;
-
             createCameraPreviewSession();
         }
 
@@ -119,18 +120,15 @@ public class ImageDetection extends Activity {
             ImageDetection.this.finish();
         }
     };
-    private final TextureView.SurfaceTextureListener mSurfaceTextureListener
-            = new TextureView.SurfaceTextureListener() {
+    private final TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
-        public void onSurfaceTextureAvailable(SurfaceTexture texture
-                , int width, int height) {
-
+        public void onSurfaceTextureAvailable(SurfaceTexture texture, int width, int height) {
             openCamera(width, height);
         }
 
         @Override
-        public void onSurfaceTextureSizeChanged(SurfaceTexture texture
-                , int width, int height) {
+        public void onSurfaceTextureSizeChanged(SurfaceTexture texture, int width, int height) {
+
         }
 
         @Override
@@ -140,6 +138,7 @@ public class ImageDetection extends Activity {
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture texture) {
+
         }
     };
 
@@ -167,19 +166,18 @@ public class ImageDetection extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imagedetection);
-        if (Build.VERSION.SDK_INT > 22) {
-            if (ContextCompat.checkSelfPermission(ImageDetection.this,
-                    Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(ImageDetection.this,
-                        new String[]{Manifest.permission.CAMERA}, 1);
 
-            }
-        }
-        if (classifier == null) {
-            classifier = TensorFlowImageClassifier.create(ImageDetection.this.getAssets(),
-                    MODEL_FILE, LABEL_FILE, INPUT_SIZE, IMAGE_MEAN, IMAGE_STD, INPUT_NAME, OUTPUT_NAME);
+        classifier = TensorFlowImageClassifier.create(
+                ImageDetection.this.getAssets(),
+                MODEL_FILE,
+                LABEL_FILE,
+                INPUT_SIZE,
+                IMAGE_MEAN,
+                IMAGE_STD,
+                INPUT_NAME,
+                OUTPUT_NAME
+        );
 
-        }
         //=================================
         textView = findViewById(R.id.textview);
         textureView = findViewById(R.id.texture);
@@ -197,16 +195,25 @@ public class ImageDetection extends Activity {
     }
 
     private void openCamera(int width, int height) {
-        setUpCameraOutputs(width, height);
-        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-        try {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            if (manager != null) {
+                try {
 
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                return;
+                    setUpCameraOutputs(manager, width, height);
+                    manager.openCamera(mCameraId, stateCallback, null);
+
+                } catch (CameraAccessException e) {
+                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            } else {
+                Toast.makeText(this, "Failed to get CameraManager", Toast.LENGTH_LONG).show();
+                Log.e("camera", "Failed to get CameraManager");
             }
-            manager.openCamera(mCameraId, stateCallback, null);
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
+        } else {
+            Toast.makeText(this, "Missing permissions to open the camera", Toast.LENGTH_LONG).show();
+            Log.e("camera", "Missing permissions to open the camera");
         }
     }
 
@@ -239,11 +246,8 @@ public class ImageDetection extends Activity {
                             try {
 
                                 previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-                                previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                                        CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-
-                                previewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                                        CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                                previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                                previewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
 
                                 previewRequest = previewRequestBuilder.build();
 
@@ -265,30 +269,25 @@ public class ImageDetection extends Activity {
         }
     }
 
-    private void setUpCameraOutputs(int width, int height) {
-        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+    private void setUpCameraOutputs(@NonNull CameraManager manager, int width, int height) {
         try {
 
-            CameraCharacteristics characteristics
-                    = manager.getCameraCharacteristics(mCameraId);
-
-            StreamConfigurationMap map = characteristics.get(
-                    CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraId);
+            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
             Size largest = Collections.max(
                     Arrays.asList(map.getOutputSizes(ImageFormat.YUV_420_888)),
                     new CompareSizesByArea()
             );
 
-            Log.i("camera","largest raw: "+largest);
+            Log.i("camera", "largest raw: " + largest);
 
             // TODO otherwise it will not work on newish devices, upper limit not known yet
             largest = new Size(
-                    Math.min(largest.getWidth(),  INPUT_SIZE * 2),
+                    Math.min(largest.getWidth(), INPUT_SIZE * 2),
                     Math.min(largest.getHeight(), INPUT_SIZE * 2)
             );
-            Log.i("camera","largest new: "+largest);
+            Log.i("camera", "largest new: " + largest);
 
             previewReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.YUV_420_888, 5);
             previewReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
@@ -324,9 +323,7 @@ public class ImageDetection extends Activity {
     static class CompareSizesByArea implements Comparator<Size> {
         @Override
         public int compare(Size lhs, Size rhs) {
-
-            return Long.signum((long) lhs.getWidth() * lhs.getHeight() -
-                    (long) rhs.getWidth() * rhs.getHeight());
+            return Long.signum((long) lhs.getWidth() * lhs.getHeight() - (long) rhs.getWidth() * rhs.getHeight());
         }
     }
 
