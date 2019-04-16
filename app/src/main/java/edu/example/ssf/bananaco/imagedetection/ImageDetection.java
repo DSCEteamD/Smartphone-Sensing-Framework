@@ -55,9 +55,9 @@ import edu.example.ssf.bananaco.R;
 public class ImageDetection extends Activity {
 
 
-    private static final int INPUT_SIZE = 224;
-    private static final int IMAGE_MEAN = 117;
-    private static final float IMAGE_STD = 1;
+    private static final int INPUT_SIZE = 299;
+    private static final int IMAGE_MEAN = 0;
+    private static final float IMAGE_STD = 255;
     private static final String INPUT_NAME = "Placeholder";
     private static final String OUTPUT_NAME = "final_result";
     private static final String MODEL_FILE = "file:///android_asset/bananaco_graph.pb";

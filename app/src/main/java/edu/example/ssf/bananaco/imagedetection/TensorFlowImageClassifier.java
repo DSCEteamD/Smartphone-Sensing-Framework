@@ -34,8 +34,8 @@ public class TensorFlowImageClassifier implements Classifier {
     private static final String TAG = "TensorFlowImageClassifier";
 
     // Only return this many results with at least this confidence.
-    private static final int MAX_RESULTS = 2;
-    private static final float THRESHOLD = 0.1f;
+    private static final int MAX_RESULTS = 3;
+    private static final float THRESHOLD = 0.00000000000000000000000000000000000000000001f;
 
     // Config values.
     private String inputName;
