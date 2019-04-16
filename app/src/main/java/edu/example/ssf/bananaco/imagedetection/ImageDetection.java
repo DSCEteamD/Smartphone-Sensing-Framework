@@ -190,6 +190,12 @@ public class ImageDetection extends Activity {
 
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        System.exit(0);
+    }
+
     private void openCamera(int width, int height) {
         setUpCameraOutputs(width, height);
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
