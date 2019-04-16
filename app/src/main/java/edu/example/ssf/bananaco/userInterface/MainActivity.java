@@ -25,6 +25,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
+
 import edu.example.ssf.bananaco.imagedetection.ImageDetection;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,21 +38,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     //Permissions Android
-    public  static final int PERMISSIONS_MULTIPLE_REQUEST = 123;
+    public static final int PERMISSIONS_MULTIPLE_REQUEST = 123;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ActivityCompat.requestPermissions(MainActivity.this, new  String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.RECORD_AUDIO,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, PERMISSIONS_MULTIPLE_REQUEST);
-
-    }
 
     @Override
     protected void onResume() {
         super.onResume();
         ActivityCompat.requestPermissions(
                 MainActivity.this,
-                new  String[]{
+                new String[]{
                         Manifest.permission.CAMERA
                 },
                 PERMISSIONS_MULTIPLE_REQUEST
@@ -59,11 +55,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults.length == 0 || grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (Manifest.permission.CAMERA.equals(permissions[0]) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Intent intent = new Intent(this, ImageDetection.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
             this.startActivity(intent);
             this.finish();
+        } else {
+            Toast.makeText(this, "Permission denied", Toast.LENGTH_LONG).show();
+            System.exit(0);
         }
     }
 }
