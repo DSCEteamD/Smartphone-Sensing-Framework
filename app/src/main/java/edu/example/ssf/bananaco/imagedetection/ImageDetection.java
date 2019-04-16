@@ -274,11 +274,14 @@ public class ImageDetection extends Activity {
                     new CompareSizesByArea()
             );
 
+            Log.i("camera","largest raw: "+largest);
+
             // TODO otherwise it will not work on newish devices, upper limit not known yet
             largest = new Size(
-                    Math.min(largest.getWidth(), 1080),
-                    Math.min(largest.getHeight(), 1920)
+                    Math.min(largest.getWidth(),  INPUT_SIZE * 2),
+                    Math.min(largest.getHeight(), INPUT_SIZE * 2)
             );
+            Log.i("camera","largest new: "+largest);
 
             previewReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.YUV_420_888, 5);
             previewReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
