@@ -18,7 +18,6 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
@@ -95,7 +94,6 @@ public class ImageDetection extends Activity {
     private CaptureRequest previewRequest;
 
     private CameraCaptureSession captureSession;
-    private ImageReader imageReader;
     private ImageReader previewReader;
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
 
@@ -220,7 +218,6 @@ public class ImageDetection extends Activity {
             cameraDevice.createCaptureSession(
                     Arrays.asList(
                             surface,
-                            imageReader.getSurface(),
                             previewReader.getSurface()
                     ),
                     new CameraCaptureSession.StateCallback() {
@@ -295,7 +292,7 @@ public class ImageDetection extends Activity {
 
                     if (System.currentTimeMillis() > nextUpdate.get()) {
                         nextUpdate.set(Long.MAX_VALUE);
-                        new MyTask().execute(image);
+                        new ClassifierTask().execute(image);
                     } else {
                         image.close();
                     }
@@ -303,42 +300,13 @@ public class ImageDetection extends Activity {
                 }
             }, null);
 
-            imageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.JPEG, 2);
-            imageReader.setOnImageAvailableListener(
-                    new ImageReader.OnImageAvailableListener() {
 
-                        @Override
-                        public void onImageAvailable(ImageReader reader) {
+            previewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class), width, height, largest);
 
-                            Image image = reader.acquireNextImage();
-                            ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                            byte[] bytes = new byte[buffer.remaining()];
-
-                            File file = new File(getExternalFilesDir(null), "pic.jpg");
-                            buffer.get(bytes);
-                            try (
-                                    FileOutputStream output = new FileOutputStream(file)) {
-                                output.write(bytes);
-                                Toast.makeText(ImageDetection.this, "Path: " + file, Toast.LENGTH_LONG).show();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            } finally {
-                                image.close();
-                            }
-                        }
-                    }, null);
-
-
-            previewSize = chooseOptimalSize(map.getOutputSizes(
-                    SurfaceTexture.class), width, height, largest);
-
-            int orientation = getResources().getConfiguration().orientation;
-            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                textureView.setAspectRatio(
-                        previewSize.getWidth(), previewSize.getHeight());
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                textureView.setAspectRatio(previewSize.getWidth(), previewSize.getHeight());
             } else {
-                textureView.setAspectRatio(
-                        previewSize.getHeight(), previewSize.getWidth());
+                textureView.setAspectRatio(previewSize.getHeight(), previewSize.getWidth());
             }
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -357,7 +325,7 @@ public class ImageDetection extends Activity {
     }
 
 
-    class MyTask extends AsyncTask<Image, Void, String> {
+    class ClassifierTask extends AsyncTask<Image, Void, String> {
 
         @Override
         protected void onPreExecute() {
