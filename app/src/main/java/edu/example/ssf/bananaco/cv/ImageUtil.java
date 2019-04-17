@@ -1,4 +1,4 @@
-package edu.example.ssf.bananaco;
+package edu.example.ssf.bananaco.cv;
 
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;

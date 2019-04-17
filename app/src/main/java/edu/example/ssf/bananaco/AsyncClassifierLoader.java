@@ -7,6 +7,9 @@ import android.os.AsyncTask;
 
 import java.lang.ref.WeakReference;
 
+import edu.example.ssf.bananaco.cv.Classifier;
+import edu.example.ssf.bananaco.cv.TensorFlowImageClassifier;
+
 public class AsyncClassifierLoader extends AsyncTask<Void, Void, Void> {
 
     public static final int INPUT_SIZE = 299;

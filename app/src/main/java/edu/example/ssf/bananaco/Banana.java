@@ -45,6 +45,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import edu.example.ssf.bananaco.cv.Classifier;
+import edu.example.ssf.bananaco.cv.ImageUtil;
+import edu.example.ssf.bananaco.cv.Recognition;
+
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class Banana extends Activity {
 
@@ -206,6 +210,10 @@ public class Banana extends Activity {
         if (cameraDevice != null) {
             cameraDevice.close();
             cameraDevice = null;
+        }
+        if (classifier != null) {
+            classifier.close();
+            classifier = null;
         }
     }
 
@@ -404,7 +412,7 @@ public class Banana extends Activity {
     }
 
 
-    class ClassifierTask extends AsyncTask<Image, Void, List<Classifier.Recognition>> {
+    class ClassifierTask extends AsyncTask<Image, Void, List<Recognition>> {
 
         @Override
         protected void onPreExecute() {
@@ -412,7 +420,7 @@ public class Banana extends Activity {
         }
 
         @Override
-        protected List<Classifier.Recognition> doInBackground(Image... images) {
+        protected List<Recognition> doInBackground(Image... images) {
             Image image = images[0];
             final YuvImage yuvImage = new YuvImage(ImageUtil.getDataFromImage(image, ImageUtil.COLOR_FormatNV21), ImageFormat.NV21, image.getWidth(), image.getHeight(), null);
             ByteArrayOutputStream outBitmap = new ByteArrayOutputStream();
@@ -430,21 +438,21 @@ public class Banana extends Activity {
                 e.printStackTrace();
             }
 
-            final List<Classifier.Recognition> results = classifier.recognizeImage(croppedBitmap);
+            final List<Recognition> results = classifier.recognizeImage(croppedBitmap);
 
             image.close();
             return results;
         }
 
         @Override
-        protected void onPostExecute(List<Classifier.Recognition> results) {
+        protected void onPostExecute(List<Recognition> results) {
             super.onPostExecute(results);
             nextUpdate.set(System.currentTimeMillis() + 500);
             float percentageUnripe      = Float.NaN;
             float percentageRipe        = Float.NaN;
             float percentageOverripe    = Float.NaN;
 
-            for (Classifier.Recognition recognition : results) {
+            for (Recognition recognition : results) {
                 switch (recognition.getTitle()) {
                     case "unripen":
                         percentageUnripe = recognition.getConfidence();
