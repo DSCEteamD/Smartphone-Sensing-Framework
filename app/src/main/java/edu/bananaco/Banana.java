@@ -1,4 +1,4 @@
-package edu.example.ssf.bananaco;
+package edu.bananaco;
 
 import android.Manifest;
 import android.app.Activity;
@@ -45,9 +45,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import edu.example.ssf.bananaco.cv.Classifier;
-import edu.example.ssf.bananaco.cv.ImageUtil;
-import edu.example.ssf.bananaco.cv.Recognition;
+import edu.bananaco.cv.Classifier;
+import edu.bananaco.cv.ImageUtil;
+import edu.bananaco.cv.Recognition;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class Banana extends Activity {
@@ -211,16 +211,19 @@ public class Banana extends Activity {
             cameraDevice.close();
             cameraDevice = null;
         }
-        if (classifier != null) {
-            classifier.close();
-            classifier = null;
-        }
     }
 
     @Override
     protected void onDestroy() {
         Log.i("state", "onDestroy");
         super.onDestroy();
+        if (classifier != null) {
+            // first set to null then close
+            // so that the background tasks understands
+            Classifier local = classifier;
+            classifier = null;
+            local.close();
+        }
     }
 
     public void loadClassifier() {
@@ -438,10 +441,20 @@ public class Banana extends Activity {
                 e.printStackTrace();
             }
 
-            final List<Recognition> results = classifier.recognizeImage(croppedBitmap);
+            try {
+                return classifier.recognizeImage(croppedBitmap);
+            } catch (RuntimeException e) {
+                if (Banana.this.classifier == null) {
+                    // fine app is being stopped
+                    Log.i("classifier", "Ignoring RuntimeException because app is closed: "+ e.getMessage());
+                    return Collections.emptyList();
+                } else {
+                    throw e;
+                }
+            } finally {
+                image.close();
+            }
 
-            image.close();
-            return results;
         }
 
         @Override

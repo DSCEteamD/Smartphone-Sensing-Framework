@@ -1,4 +1,4 @@
-package edu.example.ssf.bananaco;
+package edu.bananaco;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -7,8 +7,8 @@ import android.os.AsyncTask;
 
 import java.lang.ref.WeakReference;
 
-import edu.example.ssf.bananaco.cv.Classifier;
-import edu.example.ssf.bananaco.cv.TensorFlowImageClassifier;
+import edu.bananaco.cv.Classifier;
+import edu.bananaco.cv.TensorFlowImageClassifier;
 
 public class AsyncClassifierLoader extends AsyncTask<Void, Void, Void> {
 

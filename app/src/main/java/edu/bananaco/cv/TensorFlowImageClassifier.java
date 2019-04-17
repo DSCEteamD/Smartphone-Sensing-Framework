@@ -10,7 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package edu.example.ssf.bananaco.cv;
+package edu.bananaco.cv;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
