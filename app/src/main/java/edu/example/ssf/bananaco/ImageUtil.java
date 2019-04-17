@@ -1,4 +1,4 @@
-package edu.example.ssf.bananaco.imagedetection;
+package edu.example.ssf.bananaco;
 
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;

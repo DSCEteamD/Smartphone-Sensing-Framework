@@ -1,4 +1,4 @@
-package edu.example.ssf.bananaco.imagedetection;
+package edu.example.ssf.bananaco;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.TextureView;

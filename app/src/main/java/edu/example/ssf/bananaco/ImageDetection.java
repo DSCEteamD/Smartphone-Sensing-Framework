@@ -1,4 +1,4 @@
-package edu.example.ssf.bananaco.imagedetection;
+package edu.example.ssf.bananaco;
 
 import android.Manifest;
 import android.app.Activity;
@@ -27,21 +27,17 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
-import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,23 +45,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import edu.example.ssf.bananaco.R;
-
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class ImageDetection extends Activity {
 
+    private static final String CAMERA_ID = "0";
+    private static final int PERMISSIONS_MULTIPLE_REQUEST = 123;
+    private static final int INPUT_SIZE = AsyncClassifierLoader.INPUT_SIZE;
 
-    private static final int INPUT_SIZE = 299;
-    private static final int IMAGE_MEAN = 0;
-    private static final float IMAGE_STD = 255;
-    private static final String INPUT_NAME = "Placeholder";
-    private static final String OUTPUT_NAME = "final_result";
-    private static final String MODEL_FILE = "file:///android_asset/bananaco_graph.pb";
-    private static final String LABEL_FILE = "file:///android_asset/bananaco_labels.txt";
-    /*private static final String INPUT_NAME = "input";
-    private static final String OUTPUT_NAME = "output";
-    private static final String MODEL_FILE = "file:///android_asset/tensorflow_inception_graph.pb";
-    private static final String LABEL_FILE = "file:///android_asset/imagenet_comp_graph_label_strings.txt";*/
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     private static final String TAG = "ImageDetection";
 
@@ -79,23 +65,21 @@ public class ImageDetection extends Activity {
     private Classifier classifier;
 
     //------------------------------------------------------------
-    private TextView textView;
-    private ImageView imageViewIsBanana;
+    private TextView percentageUnripe;
+    private TextView percentageRipe;
+    private TextView percentageOverripe;
+    private ProgressBar progressRipeness;
+
     private AtomicLong nextUpdate = new AtomicLong(0);
 
     private AutoFitTextureView textureView;
-
-    private String mCameraId = "0";
-
     private CameraDevice cameraDevice;
-
-    private Size previewSize;
-    private CaptureRequest.Builder previewRequestBuilder;
-
-    private CaptureRequest previewRequest;
-
     private CameraCaptureSession captureSession;
     private ImageReader previewReader;
+
+    private Size previewSize;
+    private Size surfaceSize;
+
 
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
 
@@ -123,7 +107,7 @@ public class ImageDetection extends Activity {
     private final TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture texture, int width, int height) {
-            openCamera(width, height);
+            tryOpenCamera(width, height);
         }
 
         @Override
@@ -164,34 +148,124 @@ public class ImageDetection extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i("state", "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imagedetection);
 
-        classifier = TensorFlowImageClassifier.create(
-                ImageDetection.this.getAssets(),
-                MODEL_FILE,
-                LABEL_FILE,
-                INPUT_SIZE,
-                IMAGE_MEAN,
-                IMAGE_STD,
-                INPUT_NAME,
-                OUTPUT_NAME
-        );
-
         //=================================
-        textView = findViewById(R.id.textview);
-        textureView = findViewById(R.id.texture);
-        textureView.setSurfaceTextureListener(mSurfaceTextureListener);
+        this.textureView = findViewById(R.id.texture);
+        this.textureView.setSurfaceTextureListener(mSurfaceTextureListener);
 
-        imageViewIsBanana = findViewById(R.id.imageViewIsBanana);
-        imageViewIsBanana.setImageResource(R.drawable.yes);
 
+        this.percentageUnripe   = findViewById(R.id.bananaPercentageUnripe);
+        this.percentageRipe     = findViewById(R.id.bananaPercentageRipe);
+        this.percentageOverripe = findViewById(R.id.bananaPercentageOverripe);
+        this.progressRipeness   = findViewById(R.id.bananaRipeValue);
+
+        this.loadClassifier();
+    }
+
+    @Override
+    protected void onRestart() {
+        Log.i("state", "onRestart");
+        super.onRestart();
+        if (this.surfaceSize != null) {
+            this.tryOpenCamera();
+        } else {
+            Log.e("state", "surfaceSize is invalid, cannot re-start");
+            this.finish();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        Log.i("state", "onStart");
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.i("state", "onResume");
+        super.onResume();
     }
 
     @Override
     protected void onPause() {
+        Log.i("state", "onPause");
         super.onPause();
-        System.exit(0);
+    }
+
+    @Override
+    protected void onStop() {
+        Log.i("state", "onStop");
+        super.onStop();
+        if (captureSession != null) {
+            captureSession.close();
+            captureSession = null;
+        }
+        if (cameraDevice != null) {
+            cameraDevice.close();
+            cameraDevice = null;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.i("state", "onDestroy");
+        super.onDestroy();
+    }
+
+    public void loadClassifier() {
+        new AsyncClassifierLoader(this, new AsyncClassifierLoader.Callback() {
+            @Override
+            public void onClassifierLoaded(Classifier classifier) {
+                ImageDetection.this.classifier = classifier;
+            }
+        }).execute();
+    }
+
+    public void updateConfidenceLevels(float percentageUnripe, float percentageRipe, float percentageOverripe) {
+
+        float progress0 = (percentageUnripe + (1.0f - percentageRipe)) / 2.0f;
+        float progress1 = ((1.0f - percentageRipe) + percentageOverripe) / 2.0f;
+
+        float progress = 0.5f - progress0 + progress1;
+
+        //float progress = ((1.0f - percentageUnripe) + percentageRipe*0.5f + percentageOverripe) / (percentageUnripe + percentageOverripe + percentageRipe);
+
+        ImageDetection.this.percentageUnripe    .setText(String.format("%.2f%%", percentageUnripe   * 100.0f));
+        ImageDetection.this.percentageRipe      .setText(String.format("%.2f%%", percentageRipe     * 100.0f));
+        ImageDetection.this.percentageOverripe  .setText(String.format("%.2f%%", percentageOverripe * 100.0f));
+        ImageDetection.this.progressRipeness.setProgress((int)(progress * 100.0f));
+        ImageDetection.this.progressRipeness.setMax(100);
+    }
+
+    private void tryOpenCamera(int width, int height) {
+        this.surfaceSize = new Size(width, height);
+        this.tryOpenCamera();
+    }
+    private void tryOpenCamera() {
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{
+                        Manifest.permission.CAMERA
+                },
+                PERMISSIONS_MULTIPLE_REQUEST
+        );
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (Manifest.permission.CAMERA.equals(permissions[0]) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            this.openCamera();
+        } else {
+            Toast.makeText(this, "Permission denied", Toast.LENGTH_LONG).show();
+            System.exit(0);
+        }
+    }
+
+    private void openCamera() {
+        this.openCamera(this.surfaceSize.getWidth(), this.surfaceSize.getHeight());
     }
 
     private void openCamera(int width, int height) {
@@ -201,7 +275,7 @@ public class ImageDetection extends Activity {
                 try {
 
                     setUpCameraOutputs(manager, width, height);
-                    manager.openCamera(mCameraId, stateCallback, null);
+                    manager.openCamera(CAMERA_ID, stateCallback, null);
 
                 } catch (CameraAccessException e) {
                     Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
@@ -223,7 +297,7 @@ public class ImageDetection extends Activity {
             texture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
             Surface surface = new Surface(texture);
 
-            previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            final CaptureRequest.Builder previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             previewRequestBuilder.addTarget(surface);
             previewRequestBuilder.addTarget(previewReader.getSurface());
 
@@ -249,9 +323,11 @@ public class ImageDetection extends Activity {
                                 previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                                 previewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
 
-                                previewRequest = previewRequestBuilder.build();
-
-                                captureSession.setRepeatingRequest(previewRequest, null, null);
+                                captureSession.setRepeatingRequest(
+                                        previewRequestBuilder.build(),
+                                        null,
+                                        null
+                                );
                             } catch (CameraAccessException e) {
                                 e.printStackTrace();
                             }
@@ -272,7 +348,7 @@ public class ImageDetection extends Activity {
     private void setUpCameraOutputs(@NonNull CameraManager manager, int width, int height) {
         try {
 
-            CameraCharacteristics characteristics = manager.getCameraCharacteristics(mCameraId);
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics(CAMERA_ID);
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
             Size largest = Collections.max(
@@ -295,7 +371,7 @@ public class ImageDetection extends Activity {
                 public void onImageAvailable(ImageReader reader) {
                     Image image = reader.acquireNextImage();
 
-                    if (System.currentTimeMillis() > nextUpdate.get()) {
+                    if (System.currentTimeMillis() > nextUpdate.get() && ImageDetection.this.classifier != null) {
                         nextUpdate.set(Long.MAX_VALUE);
                         new ClassifierTask().execute(image);
                     } else {
@@ -316,7 +392,7 @@ public class ImageDetection extends Activity {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         } catch (NullPointerException e) {
-            Log.d(TAG, "NullPointer");
+            Log.e(TAG, "NullPointer", e);
         }
     }
 
@@ -328,7 +404,7 @@ public class ImageDetection extends Activity {
     }
 
 
-    class ClassifierTask extends AsyncTask<Image, Void, String> {
+    class ClassifierTask extends AsyncTask<Image, Void, List<Classifier.Recognition>> {
 
         @Override
         protected void onPreExecute() {
@@ -336,7 +412,7 @@ public class ImageDetection extends Activity {
         }
 
         @Override
-        protected String doInBackground(Image... images) {
+        protected List<Classifier.Recognition> doInBackground(Image... images) {
             Image image = images[0];
             final YuvImage yuvImage = new YuvImage(ImageUtil.getDataFromImage(image, ImageUtil.COLOR_FormatNV21), ImageFormat.NV21, image.getWidth(), image.getHeight(), null);
             ByteArrayOutputStream outBitmap = new ByteArrayOutputStream();
@@ -357,14 +433,32 @@ public class ImageDetection extends Activity {
             final List<Classifier.Recognition> results = classifier.recognizeImage(croppedBitmap);
 
             image.close();
-            return results.toString();
+            return results;
         }
 
         @Override
-        protected void onPostExecute(String string) {
-            super.onPostExecute(string);
+        protected void onPostExecute(List<Classifier.Recognition> results) {
+            super.onPostExecute(results);
             nextUpdate.set(System.currentTimeMillis() + 500);
-            textView.setText(String.format("%d -> %d: \n%s", System.currentTimeMillis(), nextUpdate.get(), string));
+            float percentageUnripe      = Float.NaN;
+            float percentageRipe        = Float.NaN;
+            float percentageOverripe    = Float.NaN;
+
+            for (Classifier.Recognition recognition : results) {
+                switch (recognition.getTitle()) {
+                    case "unripen":
+                        percentageUnripe = recognition.getConfidence();
+                        break;
+                    case "ripe":
+                        percentageRipe = recognition.getConfidence();
+                        break;
+                    case "overripe":
+                        percentageOverripe = recognition.getConfidence();
+                        break;
+                }
+            }
+
+            ImageDetection.this.updateConfidenceLevels(percentageUnripe, percentageRipe, percentageOverripe);
         }
     }
 
