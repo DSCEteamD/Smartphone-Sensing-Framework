@@ -44,7 +44,6 @@ public class AsyncClassifierLoader extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... voids) {
-        System.loadLibrary("native-lib");
         classifier = TensorFlowImageClassifier.create(
                 assets,
                 MODEL_FILE,
