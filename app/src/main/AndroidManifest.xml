@@ -24,7 +24,7 @@
         android:roundIcon="@drawable/banana"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ImageDetection" android:screenOrientation="portrait">
+        <activity android:name=".Banana" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

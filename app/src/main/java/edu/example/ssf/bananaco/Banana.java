@@ -46,14 +46,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class ImageDetection extends Activity {
+public class Banana extends Activity {
 
     private static final String CAMERA_ID = "0";
     private static final int PERMISSIONS_MULTIPLE_REQUEST = 123;
     private static final int INPUT_SIZE = AsyncClassifierLoader.INPUT_SIZE;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
-    private static final String TAG = "ImageDetection";
+    private static final String TAG = "Banana";
 
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
@@ -85,7 +85,7 @@ public class ImageDetection extends Activity {
 
         @Override
         public void onOpened(CameraDevice cameraDevice) {
-            ImageDetection.this.cameraDevice = cameraDevice;
+            Banana.this.cameraDevice = cameraDevice;
             createCameraPreviewSession();
         }
 
@@ -93,15 +93,15 @@ public class ImageDetection extends Activity {
         @Override
         public void onDisconnected(CameraDevice cameraDevice) {
             cameraDevice.close();
-            ImageDetection.this.cameraDevice = null;
+            Banana.this.cameraDevice = null;
         }
 
 
         @Override
         public void onError(CameraDevice cameraDevice, int error) {
             cameraDevice.close();
-            ImageDetection.this.cameraDevice = null;
-            ImageDetection.this.finish();
+            Banana.this.cameraDevice = null;
+            Banana.this.finish();
         }
     };
     private final TextureView.SurfaceTextureListener mSurfaceTextureListener = new TextureView.SurfaceTextureListener() {
@@ -150,7 +150,7 @@ public class ImageDetection extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("state", "onCreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_imagedetection);
+        setContentView(R.layout.banana);
 
         //=================================
         this.textureView = findViewById(R.id.texture);
@@ -219,7 +219,7 @@ public class ImageDetection extends Activity {
         new AsyncClassifierLoader(this, new AsyncClassifierLoader.Callback() {
             @Override
             public void onClassifierLoaded(Classifier classifier) {
-                ImageDetection.this.classifier = classifier;
+                Banana.this.classifier = classifier;
             }
         }).execute();
     }
@@ -233,11 +233,11 @@ public class ImageDetection extends Activity {
 
         //float progress = ((1.0f - percentageUnripe) + percentageRipe*0.5f + percentageOverripe) / (percentageUnripe + percentageOverripe + percentageRipe);
 
-        ImageDetection.this.percentageUnripe    .setText(String.format("%.2f%%", percentageUnripe   * 100.0f));
-        ImageDetection.this.percentageRipe      .setText(String.format("%.2f%%", percentageRipe     * 100.0f));
-        ImageDetection.this.percentageOverripe  .setText(String.format("%.2f%%", percentageOverripe * 100.0f));
-        ImageDetection.this.progressRipeness.setProgress((int)(progress * 100.0f));
-        ImageDetection.this.progressRipeness.setMax(100);
+        Banana.this.percentageUnripe    .setText(String.format("%.2f%%", percentageUnripe   * 100.0f));
+        Banana.this.percentageRipe      .setText(String.format("%.2f%%", percentageRipe     * 100.0f));
+        Banana.this.percentageOverripe  .setText(String.format("%.2f%%", percentageOverripe * 100.0f));
+        Banana.this.progressRipeness.setProgress((int)(progress * 100.0f));
+        Banana.this.progressRipeness.setMax(100);
     }
 
     private void tryOpenCamera(int width, int height) {
@@ -335,7 +335,7 @@ public class ImageDetection extends Activity {
 
                         @Override
                         public void onConfigureFailed(CameraCaptureSession cameraCaptureSession) {
-                            Toast.makeText(ImageDetection.this, "Config Failed!"
+                            Toast.makeText(Banana.this, "Config Failed!"
                                     , Toast.LENGTH_SHORT).show();
                         }
                     }, null
@@ -371,7 +371,7 @@ public class ImageDetection extends Activity {
                 public void onImageAvailable(ImageReader reader) {
                     Image image = reader.acquireNextImage();
 
-                    if (System.currentTimeMillis() > nextUpdate.get() && ImageDetection.this.classifier != null) {
+                    if (System.currentTimeMillis() > nextUpdate.get() && Banana.this.classifier != null) {
                         nextUpdate.set(Long.MAX_VALUE);
                         new ClassifierTask().execute(image);
                     } else {
@@ -458,7 +458,7 @@ public class ImageDetection extends Activity {
                 }
             }
 
-            ImageDetection.this.updateConfidenceLevels(percentageUnripe, percentageRipe, percentageOverripe);
+            Banana.this.updateConfidenceLevels(percentageUnripe, percentageRipe, percentageOverripe);
         }
     }
 
