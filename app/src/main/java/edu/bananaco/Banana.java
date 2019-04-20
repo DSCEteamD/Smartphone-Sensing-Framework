@@ -136,8 +136,9 @@ public class Banana extends Activity {
         int w = aspectRatio.getWidth() / 10;
         int h = aspectRatio.getHeight() / 10;
         for (Size option : choices) {
-            if (option.getHeight() == option.getWidth() * h / w &&
-                    option.getWidth() >= width && option.getHeight() >= height) {
+            if (option.getHeight() == option.getWidth() * h / w
+                    && option.getWidth() <= width
+                    && option.getHeight() <= height) {
                 bigEnough.add(option);
             }
         }
